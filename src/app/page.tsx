@@ -1,11 +1,23 @@
 "use client";
 
+import { ToolInvocation } from "ai";
 import { useChat } from "ai/react";
 
 export default function ChatbotUI() {
-  const { messages, input, handleInputChange, handleSubmit } = useChat();
-
-  console.log(messages);
+  const { messages, input, handleInputChange, handleSubmit, addToolResult } =
+    useChat({
+      async onToolCall({ toolCall }) {
+        if (toolCall.toolName === "getLocation") {
+          const cities = [
+            "New York",
+            "Los Angeles",
+            "Chicago",
+            "San Francisco",
+          ];
+          return cities[Math.floor(Math.random() * cities.length)];
+        }
+      },
+    });
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -25,6 +37,62 @@ export default function ChatbotUI() {
               }`}
             >
               {message.content}
+              {/* <div key={message.id} className="flex flex-row gap-2">
+                <div className="w-24 text-zinc-500">{`${
+                  message.toolInvocations ? "tool" : message.role
+                }: `}</div>
+                <div className="w-full">
+                  {message.toolInvocations
+                    ? message.toolInvocations.map(
+                        (tool) =>
+                          `${tool.toolName}(${JSON.stringify(tool.args)})`
+                      )
+                    : message.content}
+                </div>
+              </div> */}
+              {/* {message.content} */}
+              {message.toolInvocations?.map(
+                (toolInvocation: ToolInvocation) => {
+                  const toolCallId = toolInvocation.toolCallId;
+                  const addResult = (result: string) =>
+                    addToolResult({ toolCallId, result });
+
+                  // render confirmation tool (client-side tool with user interaction)
+                  if (toolInvocation.toolName === "askForConfirmation") {
+                    return (
+                      <div key={toolCallId}>
+                        {toolInvocation.args.message}
+                        <div>
+                          {"result" in toolInvocation ? (
+                            <b>{toolInvocation.result}</b>
+                          ) : (
+                            <>
+                              <button onClick={() => addResult("Yes")}>
+                                Yes
+                              </button>
+                              <button onClick={() => addResult("No")}>
+                                No
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // other tools:
+                  return "result" in toolInvocation ? (
+                    <div key={toolCallId}>
+                      Tool call {`${toolInvocation.toolName}: `}
+                      {toolInvocation.result}
+                    </div>
+                  ) : (
+                    <div key={toolCallId}>
+                      Calling {toolInvocation.toolName}...
+                    </div>
+                  );
+                }
+              )}
             </div>
           </div>
         ))}
