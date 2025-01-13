@@ -6,18 +6,20 @@ import { useChat } from "ai/react";
 export default function ChatbotUI() {
   const { messages, input, handleInputChange, handleSubmit, addToolResult } =
     useChat({
-      async onToolCall({ toolCall }) {
-        if (toolCall.toolName === "getLocation") {
-          const cities = [
-            "New York",
-            "Los Angeles",
-            "Chicago",
-            "San Francisco",
-          ];
-          return cities[Math.floor(Math.random() * cities.length)];
-        }
-      },
+      // async onToolCall({ toolCall }) {
+      //   if (toolCall.toolName === "getLocation") {
+      //     const cities = [
+      //       "New York",
+      //       "Los Angeles",
+      //       "Chicago",
+      //       "San Francisco",
+      //     ];
+      //     return cities[Math.floor(Math.random() * cities.length)];
+      //   }
+      // },
     });
+
+  console.log(messages);
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -37,20 +39,6 @@ export default function ChatbotUI() {
               }`}
             >
               {message.content}
-              {/* <div key={message.id} className="flex flex-row gap-2">
-                <div className="w-24 text-zinc-500">{`${
-                  message.toolInvocations ? "tool" : message.role
-                }: `}</div>
-                <div className="w-full">
-                  {message.toolInvocations
-                    ? message.toolInvocations.map(
-                        (tool) =>
-                          `${tool.toolName}(${JSON.stringify(tool.args)})`
-                      )
-                    : message.content}
-                </div>
-              </div> */}
-              {/* {message.content} */}
               {message.toolInvocations?.map(
                 (toolInvocation: ToolInvocation) => {
                   const toolCallId = toolInvocation.toolCallId;
@@ -58,7 +46,7 @@ export default function ChatbotUI() {
                     addToolResult({ toolCallId, result });
 
                   // render confirmation tool (client-side tool with user interaction)
-                  if (toolInvocation.toolName === "askForConfirmation") {
+                  if (toolInvocation.toolName === "weather") {
                     return (
                       <div key={toolCallId}>
                         {toolInvocation.args.message}
