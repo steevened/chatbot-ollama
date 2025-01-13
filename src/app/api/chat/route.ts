@@ -64,16 +64,11 @@ export async function POST(req: Request) {
             key: openWeatherApiKey,
             units: "metric",
           });
-
           const current = await openWeather.getCurrent();
-
-          return {
-            current,
-          };
+          return { current };
         },
       }),
     },
   });
-
   return result.toDataStreamResponse();
 }
